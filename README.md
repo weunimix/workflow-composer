@@ -5,7 +5,7 @@ OOP template compiler for pi workflows and agents. Build modular, composable wor
 ## Install
 
 ```bash
-pi install git:github.com/mmw-devs/workflow-composer@v0.1.0
+pi install git:github.com/weunimix/workflow-composer@v0.1.0
 ```
 
 For private org access, configure SSH keys first:
