@@ -1,0 +1,25 @@
+{
+  "name": "workflow-composer",
+  "version": "0.1.0",
+  "description": "OOP template compiler for pi workflows and agents — extends/mixins/slots/mandatory blocks",
+  "type": "module",
+  "bin": {
+    "workflow-composer": "./cli.mjs"
+  },
+  "keywords": [
+    "pi-package"
+  ],
+  "private": true,
+  "license": "UNLICENSED",
+  "pi": {
+    "skills": [
+      "./skills"
+    ],
+    "prompts": [
+      "./prompts"
+    ]
+  },
+  "dependencies": {
+    "yaml": "^2.8.3"
+  }
+}
