@@ -18,18 +18,17 @@ const SCALAR_FIELDS_WORKFLOW = new Set([
  * List fields: child appends to parent (deduplicated).
  */
 const LIST_FIELDS_AGENT = new Set([
-  'tools', 'mixins', 'skills', 'skillPath', 'fallbackModels',
+  'tools', 'skills', 'skillPath', 'fallbackModels',
 ]);
 
 const LIST_FIELDS_WORKFLOW = new Set([
-  'mixins',
 ]);
 
 /**
  * OOP fields consumed by compiler, removed from output.
  */
 const OOP_FIELDS = new Set([
-  'abstract', 'extends', 'mixins', 'slots', 'overrides', 'silent_overrides',
+  'abstract', 'extends', 'slots', 'overrides', 'silent_overrides',
 ]);
 
 // ── Frontmatter merging ──
@@ -110,8 +109,17 @@ export function resolveBody(chain) {
     Object.assign(allSlots, agent.slots);
   }
 
+  // 拼接全链 body（去中心化继承）
   let body = chain[0].body;
 
+  for (let i = 1; i < chain.length; i++) {
+    const layerBody = chain[i].body;
+    if (layerBody && layerBody.trim()) {
+      body = body.trimEnd() + '\n\n' + layerBody.trim();
+    }
+  }
+
+  // 全链 slot 统一解析
   body = body.replace(/\{\{slot:(\w+)(\?)?\}\}/g, (match, name, optional) => {
     if (allSlots[name] !== undefined) {
       return allSlots[name];
@@ -126,11 +134,6 @@ export function resolveBody(chain) {
   });
 
   body = body.replace(/\n{3,}/g, '\n\n');
-
-  const childBody = chain[chain.length - 1].body;
-  if (childBody && childBody.trim()) {
-    body = body.trimEnd() + '\n\n' + childBody.trim();
-  }
 
   return body.trim() + '\n';
 }

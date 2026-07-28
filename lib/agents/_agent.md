@@ -41,6 +41,13 @@ inheritSkills: false
 > | 1 | {条件描述} | {该条件影响哪些判断} | {高/中/低} |
 > 
 > 如无不确定条件，输出："经核查，本次分析所需条件均已满足，无不确定因素。"
+
+### 4. Subagent 调用安全
+禁止同时设置以下四个参数：
+- async: false
+- concurrency: > 1
+- output: false
+- progress: false
 <!-- mandatory:end -->
 
 ## 工作流程
@@ -49,4 +56,4 @@ inheritSkills: false
 
 ## 输出格式
 
-{{slot:output_format}}
+{{slot:output_format?}}

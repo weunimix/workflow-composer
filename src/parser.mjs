@@ -53,13 +53,3 @@ export function extractSlotPlaceholders(body) {
   }
   return { required, optional };
 }
-
-export function extractMixinMarkers(body) {
-  const markers = [];
-  const regex = /<!--\s*mixin:(\w+)\s*-->/g;
-  let match;
-  while ((match = regex.exec(body)) !== null) {
-    markers.push(match[1]);
-  }
-  return markers;
-}

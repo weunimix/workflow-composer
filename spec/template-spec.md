@@ -8,7 +8,6 @@
 |------|:---:|------|
 | **abstract** | `abstract: true` | 不可编译为独立文件。仅作为 `extends` 目标存在 |
 | **concrete** | 无 `abstract` 字段 | 正常编译输出 |
-| **mixin** | 无特殊要求 | 被 `mixins: [...]` 引用，内容注入目标 body |
 
 ## 二、Frontmatter 字段
 
@@ -27,7 +26,6 @@
 | `maxExecutionTimeMs` | number | | 子覆盖父 | |
 | `abstract` | boolean | | 不透传 | OOP 专用 |
 | `extends` | string | | 不透传 | 基类路径 |
-| `mixins` | string | | 不透传 | mixin 名称列表 |
 | `slots` | object | | 不透传 | `{name: value}` |
 | `overrides` | string[] | | 不透传 | 有意覆写的字段 |
 | `silent_overrides` | string[] | | 不透传 | 同上，不触发 warning |
@@ -41,7 +39,6 @@
 | `description` | string | ✅ | |
 | `abstract` | boolean | | |
 | `extends` | string | | |
-| `mixins` | string | | |
 | `slots` | object | | |
 | `overrides` | string[] | | |
 | `silent_overrides` | string[] | | |
@@ -90,15 +87,18 @@ workflow-composer/lib/
 │   └── _workflow.md
 ├── agents/             ← agent 基类 (abstract)
 │   └── _researcher.md
-└── mixins/             ← 可复用片段
+```
 
+```
 项目/.pi/agent-templates/
 ├── workflows/          ← 工作流模板源文件
 ├── agents/             ← agent 模板源文件
+```
 
+```
 项目/.pi/
 ├── workflows/          ← 工作流编译输出 + _index.md
 └── agents/             ← agent 编译输出
 ```
 
-`_` 前缀文件、`base/`、`mixins/` 目录在编译时自动跳过。
+`_` 前缀文件、`base/` 目录在编译时自动跳过。

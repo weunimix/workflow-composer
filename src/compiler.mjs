@@ -80,7 +80,7 @@ export async function build(options) {
       const fullPath = join(dir, entry.name);
 
       if (entry.isDirectory()) {
-        if (entry.name === 'base' || entry.name === 'mixins' || entry.name === 'lib') continue;
+        if (entry.name === 'base' || entry.name === 'lib') continue;
         await findAndCompile(fullPath);
       } else if (entry.isFile() && entry.name.endsWith('.md')) {
         if (entry.name.startsWith('_')) continue;
