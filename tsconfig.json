@@ -10,5 +10,5 @@
     "resolveJsonModule": true,
     "types": ["node"]
   },
-  "include": ["src/**/*.ts", "lib/**/*.ts"]
+  "include": ["src/**/*.ts", "lib/**/*.ts", "agents/**/*.ts"]
 }

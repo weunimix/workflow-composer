@@ -19,6 +19,9 @@
       "./prompts"
     ]
   },
+  "scripts": {
+    "build": "tsx src/compiler.ts"
+  },
   "dependencies": {
     "yaml": "^2.8.3"
   },
