@@ -5,7 +5,9 @@
 import { AuditBase } from '../lib/agents/audit-base'
 import { description } from '../lib/decorators/description'
 import { config } from '../lib/decorators/config'
+import { displayName } from '../lib/decorators/display-name'
 
+@displayName('节点审查')
 @description('审查引擎·模式 B——基于规范文档锚点，对单个目标节点执行合规检查，产出模式 B 报告')
 @config({
   tools: 'read',

@@ -5,9 +5,13 @@
 import { description } from '../decorators/description'
 import { config } from '../decorators/config'
 
+// 注：@displayName 是可选装饰器（见 ../decorators/display-name.ts）
+// 此文件不强制 import 以保持最小依赖
+
 export interface AgentMeta {
   description: string
   config: AgentConfig
+  displayName?: string  // 可选；存在时编译器用它做文件名前 / frontmatter name
   summary: string
   shouldDo: string[]
   shouldNot: string[]
@@ -38,10 +42,15 @@ export abstract class BaseAgent {
 
   // ===== 公共读取入口（compiler 用）=====
   public compileOutput(): AgentMeta {
-    const ctor = this.constructor as { description?: string; config?: AgentConfig }
+    const ctor = this.constructor as {
+      description?: string
+      config?: AgentConfig
+      displayName?: string
+    }
     return {
       description: ctor.description ?? '',
       config: ctor.config ?? {},
+      displayName: ctor.displayName,  // 供 compiler.ts 决定文件名前优先取
       summary: this.summary(),
       shouldDo: this.shouldDo(),
       shouldNot: this.shouldNot(),

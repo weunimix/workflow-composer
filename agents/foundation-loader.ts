@@ -5,8 +5,10 @@
 import { BaseAgent } from '../lib/agents/base-agent'
 import { description } from '../lib/decorators/description'
 import { config } from '../lib/decorators/config'
+import { displayName } from '../lib/decorators/display-name'
 import { SettingGraphReader } from '../lib/readers/setting-graph-reader'
 
+@displayName('底层约束加载器')
 @description('底层约束分析器——加载设定图谱返回约束摘要，按 Layer 0-3 约束排除不可能的配置。FRESH 上下文。')
 @config({
   tools: 'read',

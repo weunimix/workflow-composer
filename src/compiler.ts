@@ -70,10 +70,14 @@ function compileAll(): void {
     const meta = (instance as any).compileOutput() as AgentMeta
     const className = AgentClass.name
     const kebabName = kebab(className)
-    const md = renderAgent({ ...meta, name: className, kebab: kebabName })
-    const fp = join(outputDir, `${kebabName}.md`)
+    // 决策 A：displayName 优先于 kebab（中文人类名作为文件名 + frontmatter name）
+    // 没有 @displayName 时回退到 className 的 kebab 形式（向后兼容）
+    const finalName = meta.displayName ?? className
+    const fileBase = meta.displayName ?? kebabName
+    const md = renderAgent({ ...meta, name: finalName, kebab: fileBase })
+    const fp = join(outputDir, `${fileBase}.md`)
     writeFileSync(fp, md, 'utf-8')
-    console.log(`[compile] ✓ ${className} → ${fp}`)
+    console.log(`[compile] ✓ ${className} → ${fp}${meta.displayName ? ` (displayName: ${meta.displayName})` : ''}`)
   }
 
   console.log(`[compile] Done. ${agents.length} agent(s) written.`)
