@@ -5,10 +5,12 @@ import { WebResearcher } from './agents/researcher'
 import { FoundationLoaderAgent } from './agents/foundation-loader'
 import { SystemAuditAgent } from './agents/system-audit-agent'
 import { NodeReviewAgent } from './agents/node-review-agent'
+import { NaturalistAgent } from './agents/naturalist'
 
 export const agents = [
   WebResearcher,
   FoundationLoaderAgent,
   SystemAuditAgent,
-  NodeReviewAgent
+  NodeReviewAgent,
+  NaturalistAgent
 ]
