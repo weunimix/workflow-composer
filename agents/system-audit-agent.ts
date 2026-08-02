@@ -6,7 +6,9 @@ import { AuditBase } from '../lib/agents/audit-base'
 import { description } from '../lib/decorators/description'
 import { config } from '../lib/decorators/config'
 import { displayName } from '../lib/decorators/display-name'
+import { agentName } from '../lib/decorators/agent-name'
 
+@agentName('审查引擎')
 @displayName('审查引擎')
 @description('审查引擎·模式 A——扫描整个设定空间，五层递进审计，产出 Finding + 协同修改清单；只审查不修复')
 @config({

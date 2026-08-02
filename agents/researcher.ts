@@ -5,7 +5,9 @@ import { BaseAgent } from '../lib/agents/base-agent'
 import { description } from '../lib/decorators/description'
 import { config } from '../lib/decorators/config'
 import { displayName } from '../lib/decorators/display-name'
+import { agentName } from '../lib/decorators/agent-name'
 
+@agentName('web-researcher')
 @displayName('网络研究员')
 @description('自主联网研究子 agent——搜索、评估、综合研究简报')
 @config({

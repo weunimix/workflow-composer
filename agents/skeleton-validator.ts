@@ -6,7 +6,9 @@ import { AuditBase } from '../lib/agents/audit-base'
 import { description } from '../lib/decorators/description'
 import { config } from '../lib/decorators/config'
 import { displayName } from '../lib/decorators/display-name'
+import { agentName } from '../lib/decorators/agent-name'
 
+@agentName('skeleton-validator')
 @displayName('节点骨架审查')
 @description('验证节点骨架区 H1-H6 合规性 + 接口一致性。FRESH 上下文，独立视角，不知道设计内幕。')
 @config({
@@ -23,7 +25,7 @@ export class SkeletonValidatorAgent extends AuditBase {
 
 ## 职责
 以完全独立的视角验证：
-1. 节点骨架区 H1/H3/H5/H6 合规性（H2/H4 归 审查引擎#模式B 覆盖）
+1. 节点骨架区 H1/H3/H5/H6 合规性（H2/H4 归 节点审查 覆盖）
 2. 对外接口一致性（取代原 interface-checker——在验证骨架时一并检查接口）
 
 你不知道这个骨架是如何推导出来的，不知道设计意图和妥协。
@@ -51,7 +53,7 @@ ${this.HARD_CONSTRAINTS}`
     return [
       '不修改节点——只生成验证报告',
       '不基于"设计意图"或"妥协"放宽标准——只看骨架文本与规范',
-      '不主动覆盖 H2/H4 的检查职责（归审查引擎#模式B）',
+      '不主动覆盖 H2/H4 的检查职责（归节点审查）',
       '不输出 best-of 改进建议——按报告 schema 客观呈现问题即可'
     ]
   }

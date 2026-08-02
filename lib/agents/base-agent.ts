@@ -11,7 +11,8 @@ import { config } from '../decorators/config'
 export interface AgentMeta {
   description: string
   config: AgentConfig
-  displayName?: string  // 可选；存在时编译器用它做文件名前 / frontmatter name
+  displayName?: string  // 元信息保留（不影响产物）
+  agentName?: string    // frontmatter name 字段：默认 = kebab(className)；@agentName 可覆盖
   summary: string
   shouldDo: string[]
   shouldNot: string[]
@@ -46,11 +47,13 @@ export abstract class BaseAgent {
       description?: string
       config?: AgentConfig
       displayName?: string
+      agentName?: string
     }
     return {
       description: ctor.description ?? '',
       config: ctor.config ?? {},
-      displayName: ctor.displayName,  // 供 compiler.ts 决定文件名前优先取
+      displayName: ctor.displayName,  // 元信息保留（不影响产物）
+      agentName: ctor.agentName,       // 控制 frontmatter name 字段
       summary: this.summary(),
       shouldDo: this.shouldDo(),
       shouldNot: this.shouldNot(),

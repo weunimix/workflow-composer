@@ -17,7 +17,7 @@ interface RenderInput extends AgentMeta {
 }
 
 function renderAgent(input: RenderInput): string {
-  const { kebab: name, description, config, summary, shouldDo, shouldNot, watchOut, steps, buildOutput } = input
+  const { name, description, config, summary, shouldDo, shouldNot, watchOut, steps, buildOutput } = input
 
   const fm: string[] = ['---']
   fm.push(`name: ${name}`)
@@ -70,14 +70,16 @@ function compileAll(): void {
     const meta = (instance as any).compileOutput() as AgentMeta
     const className = AgentClass.name
     const kebabName = kebab(className)
-    // 决策 A：displayName 优先于 kebab（中文人类名作为文件名 + frontmatter name）
-    // 没有 @displayName 时回退到 className 的 kebab 形式（向后兼容）
-    const finalName = meta.displayName ?? className
-    const fileBase = meta.displayName ?? kebabName
-    const md = renderAgent({ ...meta, name: finalName, kebab: fileBase })
+    // 决策 A1：name 与 filename 均使用 agentName（默认 = kebab(className)，@agentName 覆盖）
+    // - 产物 filename 与老 .md 同名（如 '审查引擎.md' / 'foundation-loader.md'），
+    //   B1 cp 时覆盖老 .md 无冲突
+    // - frontmatter name 同步，确保 PI runtime 查找 key 与老 .md 一致
+    const agentName = meta.agentName ?? kebabName
+    const fileBase = agentName
+    const md = renderAgent({ ...meta, name: agentName, kebab: fileBase })
     const fp = join(outputDir, `${fileBase}.md`)
     writeFileSync(fp, md, 'utf-8')
-    console.log(`[compile] ✓ ${className} → ${fp}${meta.displayName ? ` (displayName: ${meta.displayName})` : ''}`)
+    console.log(`[compile] ✓ ${className} → ${fp}${meta.agentName && meta.agentName !== kebabName ? ` (agentName: ${meta.agentName})` : ''}`)
   }
 
   console.log(`[compile] Done. ${agents.length} agent(s) written.`)

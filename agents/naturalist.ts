@@ -6,7 +6,9 @@ import { AuditBase } from '../lib/agents/audit-base'
 import { description } from '../lib/decorators/description'
 import { config } from '../lib/decorators/config'
 import { displayName } from '../lib/decorators/display-name'
+import { agentName } from '../lib/decorators/agent-name'
 
+@agentName('naturalist')
 @displayName('自然化推理')
 @description('给定约束条件，枚举自组织涌现路径。标注每个形态的涌现驱动力和依赖的前提条件。不推荐方向。FRESH 上下文，独立视角。')
 @config({
