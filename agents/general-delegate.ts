@@ -14,9 +14,9 @@ import { agentName } from '../lib/decorators/agent-name'
 @description('workflow-composer 体系下的通用执行 subagent —— 类似 pi-subagents 内置 delegate,继承 4 条 subagent 核心纪律,全工具可执行任意任务')
 @config({
   tools: 'read, grep, find, ls, bash, edit, write, contact_supervisor',
-  context: 'inherit',
-  systemPromptMode: 'append',
-  inheritProjectContext: 'true',
+  context: 'fresh',
+  systemPromptMode: 'replace',
+  inheritProjectContext: 'false',
   inheritSkills: 'false'
 })
 export class GeneralDelegateAgent extends GeneralBase {
