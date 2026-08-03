@@ -13,6 +13,7 @@ export interface AgentMeta {
   config: AgentConfig
   displayName?: string  // 元信息保留（不影响产物）
   agentName?: string    // frontmatter name 字段：默认 = kebab(className)；@agentName 可覆盖
+  argumentHint?: string // frontmatter argument-hint 字段：仅 workflow 子类使用
   summary: string
   shouldDo: string[]
   shouldNot: string[]

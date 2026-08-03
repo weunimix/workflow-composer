@@ -2,7 +2,7 @@
 // 审查引擎·模式 A——系统审计 agent
 // 翻译自 .pi/agents/审查引擎.md 的模式 A 段（融合已废弃的 system-auditor.md 五层细节）
 
-import { AuditBase } from '../lib/agents/audit-base'
+import { GeneralBase } from '../lib/agents/general-base'
 import { description } from '../lib/decorators/description'
 import { config } from '../lib/decorators/config'
 import { displayName } from '../lib/decorators/display-name'
@@ -18,7 +18,7 @@ import { agentName } from '../lib/decorators/agent-name'
   inheritProjectContext: 'false',
   inheritSkills: 'false'
 })
-export class SystemAuditAgent extends AuditBase {
+export class SystemAuditAgent extends GeneralBase {
   public summary(): string {
     return `你是设定空间约束推演系统的独立审查引擎——模式 A「系统审计」。
 

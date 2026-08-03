@@ -2,7 +2,7 @@
 // 审查引擎·模式 B——单节点审查 agent
 // 翻译自 .pi/agents/审查引擎.md 的模式 B 段
 
-import { AuditBase } from '../lib/agents/audit-base'
+import { GeneralBase } from '../lib/agents/general-base'
 import { description } from '../lib/decorators/description'
 import { config } from '../lib/decorators/config'
 import { displayName } from '../lib/decorators/display-name'
@@ -18,7 +18,7 @@ import { agentName } from '../lib/decorators/agent-name'
   inheritProjectContext: 'false',
   inheritSkills: 'false'
 })
-export class NodeReviewAgent extends AuditBase {
+export class NodeReviewAgent extends GeneralBase {
   public summary(): string {
     return `你是设定空间约束推演系统的独立审查引擎——模式 B「节点审查」。
 

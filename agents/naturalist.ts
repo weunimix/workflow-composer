@@ -1,8 +1,8 @@
 // workflow-composer/agents/naturalist.ts
 // 自然化推理 agent（decision A：displayName 自然化推理）
-// extends AuditBase 继承 4 硬约束；涌现原则作为 public 静态常量供复用
+// extends GeneralBase 继承 4 条通用纪律；涌现原则作为 public 静态常量供复用
 
-import { AuditBase } from '../lib/agents/audit-base'
+import { GeneralBase } from '../lib/agents/general-base'
 import { description } from '../lib/decorators/description'
 import { config } from '../lib/decorators/config'
 import { displayName } from '../lib/decorators/display-name'
@@ -18,7 +18,7 @@ import { agentName } from '../lib/decorators/agent-name'
   inheritProjectContext: 'false',
   inheritSkills: 'false'
 })
-export class NaturalistAgent extends AuditBase {
+export class NaturalistAgent extends GeneralBase {
 
   // 涌现原则——public 静态常量，供 sibling 类复用
   public static readonly PRINCIPLES = `## 涌现原则

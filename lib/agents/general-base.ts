@@ -1,19 +1,21 @@
-// workflow-composer/lib/agents/audit-base.ts
-// 双模式审查类共享基类 —— Mode A（系统审计）/ Mode B（节点审查）的通用约束与原则
+// workflow-composer/lib/agents/general-base.ts
+// General 通用基类 —— 为所有需要「独立视角 + fresh 上下文 + 替换式 prompt」的
+// 子 agent 提供 4 条共享硬约束（显式文件列表 / 完整读取 / 不确定性声明 / subagent 调用安全）
+// 与 2 个辅助方法（不确定性声明模板 / 工作目录声明）。
+// 不强制 tools 字段 —— 子 agent 必须自行声明所需工具与角色特化逻辑。
 
 import { BaseAgent } from './base-agent'
 import { description } from '../decorators/description'
 import { config } from '../decorators/config'
 
-@description('审查类 agent 共享基类——双模式（A 系统审计 / B 节点审查）的通用约束与原则')
+@description('General 通用基类——独立视角 + fresh 上下文 + 替换式 prompt,继承 4 条通用纪律(显式文件列表 / 完整读取 / 不确定性声明 / subagent 调用安全)与 2 个辅助方法(不确定性声明模板 / 工作目录声明),子类自声明 tools')
 @config({
-  tools: 'read',
   context: 'fresh',
   systemPromptMode: 'replace',
   inheritProjectContext: 'false',
   inheritSkills: 'false'
 })
-export abstract class AuditBase extends BaseAgent {
+export abstract class GeneralBase extends BaseAgent {
   // 共享：硬约束（4 条 mandatory）
   protected readonly HARD_CONSTRAINTS = `1. 显式文件列表：需要读取的文件必须逐文件列出完整项目根相对路径。禁止"读取相关文件"等模糊描述。
 全局排除目录（永不可读取）：.pi-subagents/、.git/、node_modules/、参考文献/（仅在用户明确指令引用时才可读取）。

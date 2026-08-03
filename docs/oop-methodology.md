@@ -16,7 +16,7 @@
 ```
 BaseAgent（abstract）
 ├── 直接继承：WebResearcher / Worker / FoundationLoaderAgent / NaturalistAgent
-└── 中介继承：AuditBase
+└── 中介继承：GeneralBase
                 ├── SystemAuditAgent
                 └── NodeReviewAgent
 ```
@@ -78,7 +78,7 @@ class FoundationLoaderAgent extends BaseAgent {
 
 **本项目体现**：
 - `BaseAgent`：只负责 agent 契约形状
-- `AuditBase`：只负责审查类硬约束
+- `GeneralBase`：只负责通用纪律与 2 个辅助方法
 - `SettingGraphReader`：只负责设定图谱检索
 - 具体 agent：只负责具体行为（不可塞进审计逻辑）
 
@@ -100,7 +100,7 @@ class FoundationLoaderAgent extends BaseAgent {
 **原则**：子类必须可替换父类而不破坏正确性。
 
 **本项目体现**：
-- `extends AuditBase` 任何审查类 → 可替换为 `BaseAgent` 视图
+- `extends GeneralBase` 任何继承类 → 可替换为 `BaseAgent` 视图
 - 已锁定的 `protected → public` 修订（v1.1）：Runtime 派下 sibling 类跨类访问 → 必须保留 public
 - 子类 override hook 不能抛异常或返回不一致类型
 
@@ -120,7 +120,7 @@ class FoundationLoaderAgent extends BaseAgent {
 **原则**：高层模块依赖抽象，不依赖具体。
 
 **本项目体现**：
-- **弱**：当前没有 interface，依赖链是 `具体 agent → abstract BaseAgent/AuditBase`，具体到抽象 ✓
+- **弱**：当前没有 interface，依赖链是 `具体 agent → abstract BaseAgent/GeneralBase`，具体到抽象 ✓
 - **弱**：`SettingGraphReader` 是具体类被 `FoundationLoaderAgent` 直接调用（违反严格 DIP）
 
 **未来**（如果引入动态能力组合）：
@@ -138,7 +138,7 @@ class FoundationLoaderAgent extends BaseAgent {
 | 场景 | 抽象方式 | 触发条件 |
 |---|---|---|
 | 角色专属行为差异 | subclass override | 仅一个 agent，但有清晰的"is-a"关系可扩展（如 future 审查类） |
-| 共享不变量 / 硬约束 | abstract 基类（A → B → C） | ≥2 个具体类共用同一字符串/默认值（如 AuditBase.HARD_CONSTRAINTS） |
+| 共享不变量 / 硬约束 | abstract 基类（A → B → C） | ≥2 个具体类共用同一字符串/默认值（如 GeneralBase.HARD_CONSTRAINTS） |
 | 共享数据访问 / 服务 | has-a 普通类实例 | ≥2 个 agent 用到同一数据源（如 SettingGraphReader） |
 | 共享方法 / 字符串常量 | `public static readonly` 字段或 `public` 方法 | ≥2 个不相干的类要复用但无 is-a 关系（如 NaturalistAgent.PRINCIPLES） |
 
@@ -146,10 +146,10 @@ class FoundationLoaderAgent extends BaseAgent {
 
 | 抽象 | 文件 | 触发原因 |
 |---|---|---|
-| AuditBase（abstract 基类） | `lib/agents/audit-base.ts` | ≥2 个审查类共享 4 硬约束 |
+| GeneralBase（abstract 基类） | `lib/agents/general-base.ts` | ≥4 个需要独立视角的子 agent 共享 4 条通用纪律 |
 | SettingGraphReader（has-a 普通类） | `lib/readers/setting-graph-reader.ts` | 跨 agent 共享图谱访问逻辑 |
 | `NaturalistAgent.PRINCIPLES`（public static 常量） | `agents/naturalist.ts` | 涌现原则预期被其他"枚举型"流程复用 |
-| `AuditBase.HARD_CONSTRAINTS`（protected 实例字段） | `lib/agents/audit-base.ts` | 4 硬约束字符串集中，子类用 `${this.HARD_CONSTRAINTS}` 引用 |
+| `GeneralBase.HARD_CONSTRAINTS`（protected 实例字段） | `lib/agents/general-base.ts` | 4 条通用纪律字符串集中，子类用 `${this.HARD_CONSTRAINTS}` 引用 |
 
 ### 3.3 不该做的抽象
 
@@ -247,9 +247,9 @@ name 字段是 PI runtime 查找 key——**必须**与 `@displayName` 一致，
 
 当你准备创建 `agents/X.ts` 时，按顺序检查：
 
-- [ ] **基类**：`extends BaseAgent` 还是 `extends AuditBase`？
-  - 含完整 4 硬约束段 → AuditBase
-  - 不含 / 不重复 → BaseAgent
+- [ ] **基类**：`extends BaseAgent` 还是 `extends GeneralBase`？
+  - 需要"独立视角 + fresh 上下文 + 替换式 prompt" + 4 条通用纪律 → GeneralBase
+  - 不需要 / 不重复 → BaseAgent
 - [ ] **displayName**：中文产物名（用户层）
 - [ ] **@description**：工具视角描述
 - [ ] **@config**：tools / context / systemPromptMode / inheritProjectContext / inheritSkills
@@ -270,7 +270,7 @@ name 字段是 PI runtime 查找 key——**必须**与 `@displayName` 一致，
 
 所有审计类 / 推理类 agent（任何对结论下断言的 agent）：**必须**在输出末尾包含不确定性声明段。
 
-- AuditBase 子类：`this.uncertaintyTableTemplate()` 已有模板可用
+- GeneralBase 子类：`this.uncertaintyTableTemplate()` 已有模板可用
 - 直接 BaseAgent 子类：手写一份相同结构的不确定性表
 
 ---
@@ -285,7 +285,7 @@ name 字段是 PI runtime 查找 key——**必须**与 `@displayName` 一致，
 | hook | shouldDo / shouldNot / watchOut | 行为约束的归类（Should do / Should not / Watch out）|
 | access | 父类 public → 子类必须 public | Runtime 派下 sibling 跨类访问需 public（v1.1）|
 | 已锁 Template Method | `compileOutput()` 在 BaseAgent concrete | 公共入口，**不**允许子类替换 |
-| 抽象根 | 仅 BaseAgent / AuditBase 两个 abstract | 避免抽象层膨胀 |
+| 抽象根 | 仅 BaseAgent / GeneralBase 两个 abstract | 避免抽象层膨胀 |
 | 跨文件支持 | `extends` 跨文件 + `import` | 多文件场景支持（C 决策）|
 | Mixin | 暂不启用 | TS 语义冲突，除非有强需求 |
 

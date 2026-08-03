@@ -7,6 +7,11 @@ import { SystemAuditAgent } from './agents/system-audit-agent'
 import { NodeReviewAgent } from './agents/node-review-agent'
 import { NaturalistAgent } from './agents/naturalist'
 import { SkeletonValidatorAgent } from './agents/skeleton-validator'
+import { GeneralDelegateAgent } from './agents/general-delegate'
+import { WebSearchWorkflow } from './workflows/web-search-workflow'
+import { ContrastExperimentWorkflow } from './workflows/contrast-experiment-workflow'
+import { StorySimulationWorkflow } from './workflows/story-simulation-workflow'
+import { HistoryTransWorkflow } from './workflows/history-trans-workflow'
 
 export const agents = [
   WebResearcher,
@@ -14,5 +19,10 @@ export const agents = [
   SystemAuditAgent,
   NodeReviewAgent,
   NaturalistAgent,
-  SkeletonValidatorAgent
+  SkeletonValidatorAgent,
+  GeneralDelegateAgent,
+  WebSearchWorkflow,
+  ContrastExperimentWorkflow,
+  StorySimulationWorkflow,
+  HistoryTransWorkflow
 ]

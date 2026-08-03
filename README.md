@@ -6,7 +6,7 @@ OOP template compiler for pi workflows and agents. Build agents as TypeScript cl
 
 Only one agent source format is supported:
 
-- **Runtime 派 OO class**（`.ts`）——TypeScript class extends `BaseAgent`（or `AuditBase`），TS evaluates OOP at runtime, compiler writes `.pi/agents/<kebab-class-name>.md`
+- **Runtime 派 OO class**（`.ts`）——TypeScript class extends `BaseAgent`（or `GeneralBase`），TS evaluates OOP at runtime, compiler writes `.pi/agents/<kebab-class-name>.md`
 
 Source structure:
 
@@ -55,7 +55,7 @@ npm run build
 
 ## Mandatory Block (4 hard constraints)
 
-All agents inherit these through `AuditBase.HARD_CONSTRAINTS` (or via the rendered markdown):
+All agents inherit these through `GeneralBase.HARD_CONSTRAINTS` (or via the rendered markdown):
 
 1. **显式文件列表**——需读取的文件必须逐文件列出完整路径
 2. **上下文利用条款**——1M 上下文完整读取，禁止跳读
@@ -69,7 +69,7 @@ workflow-composer/
 ├── lib/
 │   ├── agents/
 │   │   ├── base-agent.ts        # 抽象基类
-│   │   └── audit-base.ts        # 审查类共享基类（注入 4 条硬约束）
+│   │   └── general-base.ts      # 通用基类（独立视角 + 4 条通用纪律 + 2 个辅助方法）
 │   ├── decorators/
 │   │   ├── description.ts       # @description 装饰器（TS stage 3）
 │   │   └── config.ts            # @config 装饰器（TS stage 3）

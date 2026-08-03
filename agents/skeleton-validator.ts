@@ -1,8 +1,8 @@
 // workflow-composer/agents/skeleton-validator.ts
 // 节点骨架审查 agent（决策 A：displayName 节点骨架审查）
-// extends AuditBase 继承 4 硬约束；审查类内容均角色特化，不抽公共复用片段
+// extends GeneralBase 继承 4 条通用纪律；角色特化内容不抽公共复用片段
 
-import { AuditBase } from '../lib/agents/audit-base'
+import { GeneralBase } from '../lib/agents/general-base'
 import { description } from '../lib/decorators/description'
 import { config } from '../lib/decorators/config'
 import { displayName } from '../lib/decorators/display-name'
@@ -18,7 +18,7 @@ import { agentName } from '../lib/decorators/agent-name'
   inheritProjectContext: 'false',
   inheritSkills: 'false'
 })
-export class SkeletonValidatorAgent extends AuditBase {
+export class SkeletonValidatorAgent extends GeneralBase {
 
   public summary(): string {
     return `你是小说世界构建系统中的节点骨架审查 agent（skeleton-validator）。

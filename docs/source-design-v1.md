@@ -214,7 +214,7 @@ tools: ... (其余配置字段)
 
 | 编号 | 内容 | 何时回来 |
 |---|---|---|
-| 原 U4 | OOP 能力子集 | ✅ 已由 Runtime 派 + AuditBase + SettingGraphReader（§11）完全解决 |
+| 原 U4 | OOP 能力子集 | ✅ 已由 Runtime 派 + GeneralBase + SettingGraphReader（§11）完全解决 |
 | 原 U5 软条件 | "b 破坏 OOP 时可放弃"——执行后做检查点 | 框架实现后验证 |
 | 编译管线 + 项目结构 + Runtime 派实现 | 已迁移至 [workflow-composer-compiler-design-v1.md](./workflow-composer-compiler-design-v1.md) | — |
 
@@ -269,26 +269,38 @@ tools: ... (其余配置字段)
 
 > Runtime 派实现里多出了两个非 agent 模块——它们不是"可编译的 agent"，而是**被多个 agent 复用的代码资产**。本节记录它们的存在、职责边界与使用方式。
 
-### 11.1 AuditBase · 审查类共享 abstract 层级
+### 11.1 GeneralBase · 通用 abstract 层级
 
-**位置**：`lib/agents/audit-base.ts`
+**位置**：`lib/agents/general-base.ts`
 
-**继承链**：`AuditBase extends BaseAgent`
+**继承链**：`GeneralBase extends BaseAgent`
 
-**存在的理由**：审查类 agent（Mode A 系统审计 / Mode B 节点审查）有几条**完全相同**的硬约束——见原 .pi/agents/审查引擎.md 的"硬约束（不可违反）"段。直接重复在两个 agent 里会漂移。AuditBase 把这些公共约束集中在一处，子类通过 `${this.HARD_CONSTRAINTS}` 引用。
+**存在的理由**：任何需要「独立视角 + fresh 上下文 + 替换式 prompt + 通用纪律」的子 agent（不限于审查类）共享同一组硬约束。直接重复在多个 agent 里会漂移。GeneralBase 把这些公共约束集中在一处，子类通过 `${this.HARD_CONSTRAINTS}` 引用。
 
 **提供的内容**：
 
 | 成员 | 类型 | 用途 |
 |---|---|---|
-| `HARD_CONSTRAINTS` | `protected readonly string` | 4 条 mandatory 文本（显式文件列表 / 完整读取 / 不确定性声明 / Subagent 4 参数禁忌） |
+| `HARD_CONSTRAINTS` | `protected readonly string` | 4 条通用纪律文本（显式文件列表 / 完整读取 / 不确定性声明 / Subagent 4 参数禁忌） |
 | `workdirNote()` | `protected method` | "工作目录为项目根"声明文本 |
 | `uncertaintyTableTemplate()` | `protected method` | 不确定性声明段的 markdown 模板 |
 
+**@config 设定**（基类承担的部分）：
+
+| 字段 | 值 | 原因 |
+|---|---|---|
+| `context` | `'fresh'` | 独立视角，不继承父会话 |
+| `systemPromptMode` | `'replace'` | 不被父 prompt 污染 |
+| `inheritProjectContext` | `'false'` | 父项目上下文不污染 |
+| `inheritSkills` | `'false'` | 父技能不污染 |
+| `tools` | **不写** | 工具集是角色特化属性，由子类自行声明 |
+
 **使用方**：
-- `agents/system-audit-agent.ts` — `extends AuditBase`，在 `summary()` 注入 `${this.HARD_CONSTRAINTS}`
-- `agents/node-review-agent.ts` — `extends AuditBase`，同上
-- 未来追加的审查类 agent 应继承 AuditBase 而非 BaseAgent
+- `agents/system-audit-agent.ts` — `extends GeneralBase`（系统审计）
+- `agents/node-review-agent.ts` — `extends GeneralBase`（节点审查）
+- `agents/skeleton-validator.ts` — `extends GeneralBase`（节点骨架验证）
+- `agents/naturalist.ts` — `extends GeneralBase`（自然化涌现推理）
+- 未来需要相同通用纪律的子 agent 应继承 GeneralBase 而非 BaseAgent
 
 ### 11.2 SettingGraphReader · 标准检索模块
 
@@ -338,10 +350,10 @@ class SettingGraphReader {
 
 | Runtime | 模块化形态 | 谁写谁读 |
 |---|---|---|
-| **Compiler (TS)** | 真正的 TS 类 + import | 每个 agent .ts 文件 `import { AuditBase } from '../lib/agents/audit-base'` |
-| **Subagent (.md runtime)** | 标准化 prompt 文本 | 每份 .md 输出里有相同的"硬约束"四段文本——通过 AuditBase 在编译期注入，确保各 agent .md 看起来一致 |
+| **Compiler (TS)** | 真正的 TS 类 + import | 每个继承 agent .ts 文件 `import { GeneralBase } from '../lib/agents/general-base'` |
+| **Subagent (.md runtime)** | 标准化 prompt 文本 | 每份 .md 输出里有相同的"硬约束"四段文本——通过 GeneralBase 在编译期注入，确保各 agent .md 看起来一致 |
 
-TS 模块与 prompt 文本**两边都同步维护**：TS 改 AuditBase → 所有继承 agent 的 .md 输出都改；这种冗余是合理的——compile-time / runtime 都一致。
+TS 模块与 prompt 文本**两边都同步维护**：TS 改 GeneralBase → 所有继承 agent 的 .md 输出都改；这种冗余是合理的——compile-time / runtime 都一致。
 
 ### 11.5 跨类关系图
 
@@ -351,9 +363,11 @@ BaseAgent（所有 agent 的根）
    ├─ Worker（直接 extends，演示 has-a 复用）
    ├─ FoundationLoaderAgent（直接 extends，持有 SettingGraphReader）
    │
-   └─ AuditBase（extends BaseAgent，引入审查类硬约束）
-      ├─ SystemAuditAgent（模式 A）
-      └─ NodeReviewAgent（模式 B）
+   └─ GeneralBase（extends BaseAgent，引入 4 条通用纪律 + 2 个辅助方法）
+      ├─ SystemAuditAgent（系统审计）
+      ├─ NodeReviewAgent（节点审查）
+      ├─ SkeletonValidatorAgent（节点骨架验证）
+      └─ NaturalistAgent（自然化涌现推理）
 
 lib/readers/setting-graph-reader.ts
    └─ FoundationLoaderAgent 持有（架构上可扩展到 Mode A）
@@ -364,6 +378,6 @@ lib/readers/setting-graph-reader.ts
 | 问题 | 答案 |
 |---|---|
 | 什么时候提炼新模块？ | 当 ≥2 个具体 agent 用到相同的能力 / 硬约束 / 数据访问时 |
-| 走 abstract 基类（AuditBase）还是共享类实例（SettingGraphReader）？ | **is-a 关系**（如"我是一种 AuditAgent"）→ abstract 基类；**has-a 关系**（如"我用 SettingsGraphReader 做事"）→ 共享类实例 |
+| 走 abstract 基类（GeneralBase）还是共享类实例（SettingGraphReader）？ | **is-a 关系**（如"我是一种独立分析型 agent"）→ abstract 基类；**has-a 关系**（如"我用 SettingsGraphReader 做事"）→ 共享类实例 |
 | 应该走 Mixin 吗？ | 一般不——除非你确实需要把同一个 trait 叠加到多个不相关的类上 |
 | Module 提炼后，原有的 .md 是否改 | 保留旧 .md 作为历史参考；Runtime 派新 agent 独立存在 |
