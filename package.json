@@ -1,7 +1,7 @@
 {
   "name": "workflow-composer",
   "version": "0.1.0",
-  "description": "OOP template compiler for pi agents — Runtime 派 BaseAgent → .pi/agents/*.md",
+  "description": "OOP template compiler for pi agents — Runtime 派 BaseAgent → agents/*.md",
   "type": "module",
   "keywords": [
     "pi-package"
@@ -10,6 +10,10 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "tsx src/compiler.ts"
+  },
+  "pi-subagents": {
+    "agents": ["./agents"],
+    "prompts": ["./prompts"]
   },
   "dependencies": {
     "yaml": "^2.8.3"

@@ -97,8 +97,8 @@ function renderWorkflow(input: RenderInput): string {
 
 function compileAll(): void {
   const projectRoot = process.cwd()
-  const agentOutputDir = resolve(projectRoot, '.pi/agents')
-  const workflowOutputDir = resolve(projectRoot, '.pi/prompts')
+  const agentOutputDir = resolve(projectRoot, 'agents')
+  const workflowOutputDir = resolve(projectRoot, 'prompts')
   mkdirSync(agentOutputDir, { recursive: true })
   mkdirSync(workflowOutputDir, { recursive: true })
 
