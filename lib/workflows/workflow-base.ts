@@ -40,4 +40,10 @@ export abstract class WorkflowBase extends BaseAgent {
       argumentHint: ctor.argumentHint ?? ''
     }
   }
+
+  // 可选钩子：按 step name 返回子步骤 prose（默认空实现）
+  // 子类 override 后在 buildOutput() 里用 this.getStepDetail('步骤名') 展开
+  protected getStepDetail(_stepName: string): string {
+    return ''
+  }
 }
