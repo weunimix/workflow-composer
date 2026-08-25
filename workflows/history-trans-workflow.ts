@@ -101,7 +101,7 @@ ${this.HARD_CONSTRAINTS}
 3. 等待用户确认后继续
 4. 接收联网搜索工作流输出作为本工作流阶段 B 的输入`,
       '阶段 B：历史转化处理': `1. 接收约束摘要（由调用方提供或由 foundation-loader 输出嵌入）
-2. 读取 .pi/skills/novel-writer-structure/workflows/历史参考转化原则.md
+2. 读取 .pi/skills/novel-writer-conventions/workflows/历史参考转化原则.md
 3. 在约束边界内，枚举联网搜索结果中的机制形态
 4. 对每个形态标注：
    - 原始运作逻辑

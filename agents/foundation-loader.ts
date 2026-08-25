@@ -39,7 +39,7 @@ export class FoundationLoaderAgent extends BaseAgent {
 3. 如果父会话未提供候选方向，只执行职责 1，跳过排除操作
 
 ## 标准检索流程（与 SettingGraphReader 对齐）
-- 入口：.pi/skills/novel-writer-structure/workflows/设定图谱.md 一、domain 映射表
+- 入口：.pi/skills/novel-writer-conventions/workflows/设定图谱.md 一、domain 映射表
 - 必加载（无条件）：创作宪法 + 叙事分层（Layer 0）
 - 选加载（按 domain）：层级 1-2 文档组合（domain 映射表）
 - 同域邻居查询：节点设定"同域节点"列

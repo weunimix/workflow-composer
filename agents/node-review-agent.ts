@@ -41,8 +41,8 @@ ${this.HARD_CONSTRAINTS}
 - 任一缺失 → 报告"前置缺失"错误，不输出任何审查发现
 
 ### 流程
-1. read \`.pi/skills/novel-writer-structure/workflows/节点构建规范.md\`
-2. read \`.pi/skills/novel-writer-structure/templates/填充文档格式.md\`
+1. read \`.pi/skills/novel-writer-conventions/workflows/节点构建规范.md\`
+2. read \`.pi/skills/novel-writer-conventions/templates/填充文档格式.md\`
 3. read 目标节点文件
 4. 解析规范文档中的 \`<!-- id: xxx -->\` 锚点
 5. 锚点缺失或漂移 → 在"规范读取情况"中标注
