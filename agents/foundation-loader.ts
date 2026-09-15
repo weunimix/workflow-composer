@@ -1,17 +1,18 @@
 // workflow-composer/agents/foundation-loader.ts
 // 底层约束分析器 —— 提炼自 .pi/agents/foundation-loader.md
-// 使用 SettingGraphReader 实现"标准检索流程"模块化
 //
 // 决策 A 接入 + 方案 A：@config 改 tools: 'read, bash'，
 // 让 foundation-loader 在子会话里真算 SHA256 做 Stale 检测。
 // bash 权限严格受限于只读命令——见 summary() 中"Bash 使用纪律"段。
+//
+// SSOT 重构（2026-09）：移除 SettingGraphReader（旧的硬编码静态数据模块），
+// 直接从 设定系统/设定图谱.yaml 读取节点数据。
 
 import { BaseAgent } from '../lib/agents/base-agent'
 import { description } from '../lib/decorators/description'
 import { config } from '../lib/decorators/config'
 import { displayName } from '../lib/decorators/display-name'
 import { agentName } from '../lib/decorators/agent-name'
-import { SettingGraphReader } from '../lib/readers/setting-graph-reader'
 
 @agentName('foundation-loader')
 @displayName('底层约束加载器')
@@ -24,9 +25,6 @@ import { SettingGraphReader } from '../lib/readers/setting-graph-reader'
   inheritSkills: 'false'
 })
 export class FoundationLoaderAgent extends BaseAgent {
-  // 持有标准检索模块（结构复用，不是运行时调用 subagent）
-  private reader = new SettingGraphReader()
-
   public summary(): string {
     return `你是小说世界构建系统中的底层约束分析器（foundation-loader）。
 
@@ -38,11 +36,14 @@ export class FoundationLoaderAgent extends BaseAgent {
 2. 基于 Layer 0-3 约束，**排除不可能的配置**——标记哪些方向被硬约束禁止
 3. 如果父会话未提供候选方向，只执行职责 1，跳过排除操作
 
-## 标准检索流程（与 SettingGraphReader 对齐）
-- 入口：.pi/skills/novel-writer-conventions/workflows/设定图谱.md 一、domain 映射表
+## 标准检索流程（从 yaml 读取）
+- 入口：设定系统/设定图谱.yaml（用 read 工具读取结构化数据）
+- by_domain 段 → 获取同域邻居（按 domain 名查 yaml.by_domain.<domain>）
+- by_name 段 → 获取单节点详情（path / status / interfaces / domain；冲突时按 "name:type" 复合 key）
+- by_path 段 → 按文件路径查 setting（适合「已知目标文件路径」场景，按 yaml.by_path.<relPath>）
+- by_book_of 段 → 双轨节点场景：domain 名 → 关联 book 列表（按 yaml.by_book_of.<domainPath>）
 - 必加载（无条件）：创作宪法 + 叙事分层（Layer 0）
-- 选加载（按 domain）：层级 1-2 文档组合（domain 映射表）
-- 同域邻居查询：节点设定"同域节点"列
+- 选加载（按 domain）：层级 1-2 文档组合（domain 映射表见 设定系统/AGENTS.md）
 - 排除操作：硬排除（Layer 0 违反）/ 软排除（Layer 1-2 可覆写）/ 同域冲突 / 约束真空
 - 输出格式：7 个固定段落 + 排除分析表
 
@@ -85,10 +86,10 @@ export class FoundationLoaderAgent extends BaseAgent {
 5. 输出 Staleness Alert 段落（含变更列表与状态）
 
 ### 第 1 步：约束加载
-1. read 设定图谱.md 一、domain 映射表 → 获取 domain 的选加载文档路径
-2. read 设定图谱.md 三、节点设定 → 获取同域邻居
+1. read 设定系统/设定图谱.yaml → 解析 by_domain / by_name / by_path / by_book_of / scan_paths 五段
+2. 按目标 domain 查 yaml.by_domain.<domain> → 获取同域邻居列表
 3. 加载必读项：创作宪法 + 叙事分层（无条件）
-4. 按 domain 加载层级 1-2 文档
+4. 按 domain 加载层级 1-2 文档（domain 映射表见 设定系统/AGENTS.md）
 5. 提取约束 → 形成 ≤800 字的约束摘要
 
 ### 第 2 步：排除操作（如有候选方向）
@@ -100,10 +101,10 @@ export class FoundationLoaderAgent extends BaseAgent {
 
   public shouldDo(): string[] {
     return [
-      '读取 .pi/skills/.../设定图谱.md 一章（domain 映射表）',
-      '读取 .pi/skills/.../设定图谱.md 三章（节点设定-同域节点列）',
+      '读取 设定系统/设定图谱.yaml（by_domain 段获取同域邻居，by_name 段获取单节点详情，by_path 段按路径查，by_book_of 段查双轨节点）',
+      '按 yaml 中 status=confirmed 过滤活跃节点',
       '加载 Layer 0 必读项（创作宪法 + 叙事分层）',
-      '按 domain 加载对应层级 1-2 文档（取自 domain 映射表）',
+      '按 domain 加载对应层级 1-2 文档（domain 映射表见 设定系统/AGENTS.md）',
       '提取约束 → 形成 ≤800 字约束摘要',
       '对每个候选方向逐项标硬/软/真空/同域冲突',
       'Stale 检测：对每个 fingerprints.yaml 注册路径执行 sha256sum，与基线 hash 比对'
@@ -137,9 +138,8 @@ export class FoundationLoaderAgent extends BaseAgent {
   public getSteps(): string[] {
     return [
       'compute-sha256-and-compare-fingerprints (Stale 检测——bash 真算 hash)',
-      'read-设定图谱',
-      'extract-domain-mapping',
-      'extract-same-domain-neighbors',
+      'read-设定图谱-yaml',
+      'parse-by-domain-for-neighbors',
       'load-layer0-must-read',
       'load-domain-layer1-2',
       'form-constraint-summary',
