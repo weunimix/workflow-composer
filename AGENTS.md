@@ -2,14 +2,14 @@
 
 ## Summary
 
-workflow-composer 是一个独立 pi 扩展插件项目，把 TypeScript OO class（继承 BaseAgent 或 GeneralBase）编译成 pi agent 和 workflow 的 markdown system prompt。日常任务读 README.md 与 Must-follow rules 足够；新增 agent 类型、修改编译产物格式、调整强制块契约前需读完整文件与 docs/ 下的设计文档。
+workflow-composer 是一个独立 pi 扩展插件项目（pi package），把 TypeScript OO class（继承 BaseAgent 或 GeneralBase）编译成 pi agent 和 workflow 的 markdown system prompt。本插件不是 pi agent 项目，本身不应存在 .pi/ 文件夹——编译产物应当落到使用方项目的 .pi/agents/ 与 .pi/prompts/ 下（即"该插件所属项目"的 .pi/，不是 workflow-composer 自身）。日常任务读 README.md 与 Must-follow rules 足够；新增 agent 类型、修改编译产物格式、调整强制块契约前需读完整文件与 docs/ 下的设计文档。
 
 ## Must-follow rules
 
 这些规则在 workflow-composer 范围内不可违反。
 
-- 修改 `agents/*.ts` 或 `workflows/*.ts` 源文件后必须执行 `npm run build` 重新生成产物，产物落点为 `agents/*.md` 与 `prompts/*.md`
-- 产物（`agents/*.md`、`prompts/`、`.pi/`、`*.tsbuildinfo`、`node_modules/`）已在 `.gitignore` 中排除，不得手动入库
+- 修改 `agents/*.ts` 或 `workflows/*.ts` 源文件后必须执行 `npm run build` 重新生成产物，产物落点为该插件所属项目（即运行 `npm run build` 时所在的工程根目录）的 `.pi/agents/*.md` 与 `.pi/prompts/*.md`，不是 workflow-composer 自身的 `agents/` 或 `prompts/`
+- 产物落点（使用方项目的 `.pi/agents/`、`.pi/prompts/`）应在使用方项目自己的 `.gitignore` 中排除（不是本插件的 `.gitignore`），本插件范围内的产物相关忽略规则只覆盖 `*.tsbuildinfo` 与 `node_modules/`
 - 所有 agent 必须继承 `BaseAgent` 或 `GeneralBase`，并实现 `summary`、`shouldDo`、`shouldNot`、`watchOut`、`getSteps`、`buildOutput` 这六个方法
 - 所有 agent 必须使用 `@displayName`、`@description`、`@config` 装饰器声明元数据
 - 4 条硬约束（显式文件列表、上下文利用条款、不确定性声明、Subagent 调用安全）来自 `GeneralBase.HARD_CONSTRAINTS`，不得删除或绕过
@@ -25,7 +25,7 @@ workflow-composer 是一个独立 pi 扩展插件项目，把 TypeScript OO clas
 
 修改现有 agent 流程：
 
-- 优先修改 `agents/*.ts` 源文件而非编译产物 `agents/*.md`
+- 优先修改 `agents/*.ts` 源文件而非使用方项目的 `.pi/agents/*.md` 编译产物
 - 跨文件引用重构时同步更新所有引用点
 - 修改后必须重新跑 `npm run build` 并检查产物 diff 是否符合预期
 
@@ -81,6 +81,10 @@ workflow-composer 是一个独立 pi 扩展插件项目，把 TypeScript OO clas
 
 workflow-composer 是基于 weunimix 小说协作工作区衍生的独立 pi 扩展插件项目。它在物理上可能作为嵌套目录存在于上游项目（上游 `.gitignore` 排除），逻辑上是独立项目：独立 git remote `git@github.com:weunimix/workflow-composer.git`，独立 commit 历史与 PR 流程。本项目反哺 root agent 的工作流编排能力。
 
+### Output directory semantics
+
+本插件编译产物的落点不是 workflow-composer 自身，而是运行 `npm run build` 时所在的工程根目录下的 `.pi/agents/` 与 `.pi/prompts/`。原因是 workflow-composer 是 pi package（编译其他 agent 的产物），不是 pi agent 项目（自身不被 pi 加载），所以本身不应存在 .pi/ 文件夹——若在该目录下出现 .pi/，会被未来 agent 误读为 pi agent 项目根而引起歧义。运行 build 时请确保 cwd 是使用方项目根目录。
+
 ### Design intent
 
 项目核心是 Runtime 派 OOP：TypeScript class 在运行时求值 OOP，compiler 把它写成 procedural markdown system prompt。这避免了在 markdown 里手写大量模板代码，同时保留 OOP 的可组合性。
@@ -95,7 +99,7 @@ OOP class 形态要求源码用 TypeScript 装饰器（stage 3），对工具链
 
 ### Common misunderstandings
 
-agents/ 目录下既有 .ts 源文件也有 .md 产物——前者是源，后者是 build 产物，不要修改 .md。`lib/readers/` 目录已空（SSOT 重构移除 SettingGraphReader 后），不要试图恢复该模块。
+agents/ 目录下只有 .ts 源文件，没有 .md——编译产物落在使用方项目的 `.pi/agents/*.md`，不在本插件内。`lib/readers/` 目录已空（SSOT 重构移除 SettingGraphReader 后），不要试图恢复该模块。
 
 ## References
 
