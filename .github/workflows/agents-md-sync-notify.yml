@@ -70,16 +70,16 @@ jobs:
       - name: 读取结果
         id: read
         run: |
-          if [ ! -s affected-agents.json ] || [ "$(cat affected-agents.json)" = "{}" ]; then
-            echo "has_affected=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_affected=true" >> "$GITHUB_OUTPUT"
-            {
-              echo "affected<<EOF"
-              cat affected-agents.json
-              echo "EOF"
-            } >> "$GITHUB_OUTPUT"
-          fi
+          node -e "
+            const fs = require('fs');
+            const content = fs.readFileSync('affected-agents.json', 'utf-8');
+            if (!content || content.trim() === '{}') {
+              fs.appendFileSync(process.env.GITHUB_OUTPUT, 'has_affected=false\n');
+            } else {
+              fs.appendFileSync(process.env.GITHUB_OUTPUT, 'has_affected=true\n');
+              fs.appendFileSync(process.env.GITHUB_OUTPUT, 'affected<<EOF\n' + content.trimEnd() + '\nEOF\n');
+            }
+          "
 
       - name: PR 评论提醒
         if: steps.read.outputs.has_affected == 'true'
