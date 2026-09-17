@@ -1,0 +1,115 @@
+name: AGENTS.md 同步提醒
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 检测受影响的 AGENTS.md
+        id: detect
+        run: |
+          node -e "
+            const { execSync } = require('child_process');
+            const fs = require('fs');
+            const path = require('path');
+
+            const baseRef = 'origin/${{ github.base_ref }}';
+            const diff = execSync('git diff --name-only ' + baseRef + '...HEAD').toString();
+            const modifiedFiles = diff.split('\n').filter(Boolean);
+
+            // 本仓库无嵌套子仓库，无需跳过
+            const candidates = modifiedFiles.filter(f => {
+              if (f === 'AGENTS.md' || f.endsWith('/AGENTS.md')) return false;
+              return true;
+            });
+
+            if (candidates.length === 0) {
+              fs.writeFileSync('affected-agents.json', '{}');
+              console.log('No files to notify');
+              process.exit(0);
+            }
+
+            // closest-file-wins：向上递归找最近的 AGENTS.md
+            function findNearestAgentsMd(filePath) {
+              let dir = path.dirname(filePath);
+              while (true) {
+                const candidate = path.join(dir, 'AGENTS.md');
+                if (fs.existsSync(candidate)) return candidate;
+                const parent = path.dirname(dir);
+                if (parent === dir) return null;
+                dir = parent;
+              }
+            }
+
+            const affected = {};
+            for (const file of candidates) {
+              const agentsMd = findNearestAgentsMd(file);
+              if (agentsMd) {
+                if (!affected[agentsMd]) affected[agentsMd] = [];
+                affected[agentsMd].push(file);
+              }
+            }
+
+            fs.writeFileSync('affected-agents.json', JSON.stringify(affected, null, 2));
+            const total = Object.values(affected).reduce((s, arr) => s + arr.length, 0);
+            console.log('Affected ' + Object.keys(affected).length + ' AGENTS.md across ' + total + ' files');
+          "
+
+      - name: 读取结果
+        id: read
+        run: |
+          if [ ! -s affected-agents.json ] || [ "$(cat affected-agents.json)" = "{}" ]; then
+            echo "has_affected=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_affected=true" >> "$GITHUB_OUTPUT"
+            {
+              echo "affected<<EOF"
+              cat affected-agents.json
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: PR 评论提醒
+        if: steps.read.outputs.has_affected == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const affected = JSON.parse(fs.readFileSync('affected-agents.json', 'utf-8'));
+            const lines = [
+              '## AGENTS.md 同步提醒',
+              '',
+              '本 PR 修改了以下文件。基于 closest-file-wins 机制，向上递归找到的最近 AGENTS.md 如下：',
+              '',
+              '| 修改文件 | 关联 AGENTS.md |',
+              '|---|---|'
+            ];
+            for (const [agentsMd, files] of Object.entries(affected)) {
+              for (const file of files) {
+                lines.push('| `' + file + '` | `' + agentsMd + '` |');
+              }
+            }
+            lines.push(
+              '',
+              '请检查这些 AGENTS.md 是否需要同步更新本次 PR 的内容。',
+              '',
+              '_此评论由 CI 自动生成（.github/workflows/agents-md-sync-notify.yml）。_'
+            );
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: lines.join('\n')
+            });
