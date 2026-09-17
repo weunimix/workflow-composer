@@ -1,0 +1,119 @@
+name: AGENTS.md 格式校验
+
+on:
+  push:
+    paths:
+      - '**/AGENTS.md'
+  pull_request:
+    paths:
+      - '**/AGENTS.md'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: AGENTS.md 格式校验
+        run: |
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+
+            // 跳过规则：本仓库无嵌套子仓库，仅跳过依赖、临时目录
+            const SKIP_DIRS = ['.git', 'node_modules', '.github'];
+
+            // 自动发现所有 AGENTS.md
+            function findAgentsMdFiles(dir) {
+              const results = [];
+              if (!fs.existsSync(dir)) return results;
+              for (const item of fs.readdirSync(dir, { withFileTypes: true })) {
+                if (SKIP_DIRS.includes(item.name)) continue;
+                const full = path.join(dir, item.name);
+                if (item.isDirectory()) {
+                  results.push(...findAgentsMdFiles(full));
+                } else if (item.name === 'AGENTS.md') {
+                  results.push(full);
+                }
+              }
+              return results;
+            }
+
+            const files = findAgentsMdFiles('.');
+            let errors = 0;
+            let warnings = 0;
+
+            for (const f of files) {
+              const content = fs.readFileSync(f, 'utf-8');
+              const lines = content.split('\n');
+              const fileErrors = [];
+              const fileWarnings = [];
+
+              // 类型识别：A 类（编码/管理型）或 B 类（知识领域型）
+              const isManagementType = lines.length > 0 && lines[0].startsWith('# Agent Instructions for ');
+              const typeLabel = isManagementType ? '[A类]' : '[B类]';
+
+              // 通用硬错误
+              if (lines.length === 0 || !lines[0].startsWith('# ')) {
+                fileErrors.push('第一行不是 H1 标题（必须以 \"# \" 开头）');
+              }
+              if (/^[ \t]+[-*][ \t]/m.test(content)) {
+                fileErrors.push('存在嵌套列表（行首缩进的 - 或 *）');
+              }
+
+              // --- 分隔线检查
+              const headContent = lines.slice(0, 5).join('\n');
+              if (/^---[ \t]*\$/m.test(headContent)) {
+                fileErrors.push('文件前 5 行内出现 ---（YAML frontmatter 误判风险）');
+              }
+              const bodyContent = lines.slice(5).join('\n');
+              if (/^---[ \t]*\$/m.test(bodyContent)) {
+                fileWarnings.push('文件中段存在 --- 水平线（提示）');
+              }
+
+              // 通用软警告
+              if (lines.length < 5) {
+                fileWarnings.push('行数 ' + lines.length + ' 过少');
+              }
+              if (lines.length > 200) {
+                fileWarnings.push('行数 ' + lines.length + ' 超过 200');
+              }
+
+              // A 类软警告
+              if (isManagementType) {
+                if (!/^##[ \t]+Summary[ \t]*\$/m.test(content)) {
+                  fileWarnings.push('A 类建议包含 ## Summary 章节');
+                }
+              }
+
+              if (fileErrors.length > 0) {
+                console.log('❌ ' + f + ' ' + typeLabel);
+                for (const e of fileErrors) {
+                  console.log('   错误: ' + e);
+                  errors++;
+                }
+                for (const w of fileWarnings) {
+                  console.log('   警告: ' + w);
+                  warnings++;
+                }
+              } else if (fileWarnings.length > 0) {
+                console.log('⚠️  ' + f + ' ' + typeLabel);
+                for (const w of fileWarnings) {
+                  console.log('   警告: ' + w);
+                  warnings++;
+                }
+              } else {
+                console.log('✅ ' + f + ' ' + typeLabel);
+              }
+            }
+
+            console.log('');
+            console.log('扫描: ' + files.length + ' 个 AGENTS.md');
+            console.log('错误: ' + errors + ', 警告: ' + warnings);
+            if (errors > 0) process.exit(1);
+            console.log('✅ AGENTS.md 格式校验通过');
+          "
