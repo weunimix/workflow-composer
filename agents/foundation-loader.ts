@@ -72,31 +72,39 @@ export class FoundationLoaderAgent extends BaseAgent {
 - 文件不存在：标记为「路径失效」（供父会话清理）
 
 你只对 hash 比对负责。后续的依赖追溯与 stale-queue 写入由父会话处理（你只读取不写）。
+`
+  }
 
-## 工作流程
-
-### 第 0 步：Stale 检测（使用 bash 真算 hash）
-1. read .pi/fingerprints.yaml——加载所有注册路径 + 基线 hash
+  // 步骤详情：工作流程从 summary() 迁移到此，由 compiler.ts 在 # Task 章节自动展开。
+  // 拆分依据：summary 描述身份/职责；getStepDetail 描述步骤实现细节。
+  public getStepDetail(stepName: string): string {
+    const details: Record<string, string> = {
+      'compute-sha256-and-compare-fingerprints (Stale 检测——bash 真算 hash)':
+        `1. read .pi/fingerprints.yaml——加载所有注册路径 + 基线 hash
 2. 对每个注册路径执行 bash 命令：\`sha256sum <绝对路径> 2>/dev/null\`
 3. 逐条比对当前 hash 与基线：
    - 一致 → 跳过
    - 不一致 → 标记为「已变更」（供父会话追溯依赖）
    - 文件不存在 → 标记为「路径失效」（供父会话清理）
 4. 将变更列表与 .pi/stale-queue.yaml 中现有 unresolved 条目交叉比对
-5. 输出 Staleness Alert 段落（含变更列表与状态）
-
-### 第 1 步：约束加载
-1. read 设定系统/设定图谱.yaml → 解析 by_domain / by_name / by_path / by_book_of / scan_paths 五段
-2. 按目标 domain 查 yaml.by_domain.<domain> → 获取同域邻居列表
-3. 加载必读项：创作宪法 + 叙事分层（无条件）
-4. 按 domain 加载层级 1-2 文档（domain 映射表见 设定系统/AGENTS.md）
-5. 提取约束 → 形成 ≤800 字的约束摘要
-
-### 第 2 步：排除操作（如有候选方向）
-- 硬排除：违反 Layer 0 元规则 → ❌
+5. 输出 Staleness Alert 段落（含变更列表与状态）`,
+      'read-设定图谱-yaml':
+        `1. read 设定系统/设定图谱.yaml → 解析 by_domain / by_name / by_path / by_book_of / scan_paths 五段`,
+      'parse-by-domain-for-neighbors':
+        `2. 按目标 domain 查 yaml.by_domain.<domain> → 获取同域邻居列表`,
+      'load-layer0-must-read':
+        `3. 加载必读项：创作宪法 + 叙事分层（无条件）`,
+      'load-domain-layer1-2':
+        `4. 按 domain 加载层级 1-2 文档（domain 映射表见 设定系统/AGENTS.md）`,
+      'form-constraint-summary':
+        `5. 提取约束 → 形成 ≤800 字的约束摘要`,
+      'run-exclusion-analysis':
+        `- 硬排除：违反 Layer 0 元规则 → ❌
 - 软排除：违反 Layer 1-2 领域级规则但可覆写 → ⚠️
 - 同域冲突：与同域邻居核心前提矛盾 → 冲突 + 升级创作宪法裁决
 - 空白标记：当前约束框架无对应规则 → ⚠️ 约束真空（风险标注，不是排除）`
+    }
+    return details[stepName] ?? ''
   }
 
   public shouldDo(): string[] {

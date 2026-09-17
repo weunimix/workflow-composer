@@ -19,6 +19,7 @@ export interface AgentMeta {
   shouldNot: string[]
   watchOut: string[]
   steps: string[]
+  stepDetails: Record<string, string>  // step 名 → 详情 prose；空字符串不输出
   buildOutput: string
 }
 
@@ -37,6 +38,14 @@ export abstract class BaseAgent {
   public shouldNot(): string[] { return [] }
   public watchOut(): string[] { return [] }
 
+  // ===== 第四个 hook（默认空实现；protected 让子类可 override）=====
+  // 与 WorkflowBase.getStepDetail 同语义：按 step 名返回子步骤 prose。
+  // 子类 override 后由 compileOutput() 收集到 stepDetails，传给 compiler.ts
+  // 在 # Task 章节自动展开——实现 Agent 与 Workflow 步骤详情机制对称。
+  protected getStepDetail(_stepName: string): string {
+    return ''
+  }
+
   // ===== abstract（每个 agent 必实现）=====
   public abstract summary(): string
   public abstract buildOutput(): string
@@ -50,6 +59,12 @@ export abstract class BaseAgent {
       displayName?: string
       agentName?: string
     }
+    const steps = this.getSteps()
+    const stepDetails: Record<string, string> = {}
+    for (const step of steps) {
+      const detail = this.getStepDetail(step)
+      if (detail) stepDetails[step] = detail
+    }
     return {
       description: ctor.description ?? '',
       config: ctor.config ?? {},
@@ -59,7 +74,8 @@ export abstract class BaseAgent {
       shouldDo: this.shouldDo(),
       shouldNot: this.shouldNot(),
       watchOut: this.watchOut(),
-      steps: this.getSteps(),
+      steps,
+      stepDetails,
       buildOutput: this.buildOutput()
     }
   }
