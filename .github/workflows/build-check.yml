@@ -41,3 +41,6 @@ jobs:
 
       - name: 编译产物
         run: npm run build
+
+      - name: 清理产物（防止污染 workflow-composer 自身 .pi/）
+        run: rm -rf .pi/

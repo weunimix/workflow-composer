@@ -6,11 +6,46 @@
 //   instanceof WorkflowBase → renderWorkflow()（prompt template 格式，产物落 .pi/prompts/）
 //   其他                    → renderAgent()（agent 7 字段格式，产物落 .pi/agents/）
 
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve, join } from 'node:path'
+import { CONFIG_DIR_NAME } from '@earendil-works/pi-coding-agent'
 import { agents } from '../agents.config'
 import type { AgentMeta } from '../lib/agents/base-agent'
 import { WorkflowBase } from '../lib/workflows/workflow-base'
+
+// 产物根目录解析优先级（前者优先）：
+//   1. 环境变量 WORKFLOW_COMPOSER_OUTPUT_DIR
+//   2. 使用方项目 .pi/settings.json 的 workflow-composer.outputDir
+//   3. 默认：join(cwd, CONFIG_DIR_NAME)——从 @earendil-works/pi-coding-agent 取
+function resolveOutputPaths(projectRoot: string): { agentDir: string; workflowDir: string } {
+  if (process.env.WORKFLOW_COMPOSER_OUTPUT_DIR) {
+    const root = process.env.WORKFLOW_COMPOSER_OUTPUT_DIR
+    return { agentDir: join(root, 'agents'), workflowDir: join(root, 'prompts') }
+  }
+
+  const settingsPath = join(projectRoot, '.pi', 'settings.json')
+  if (existsSync(settingsPath)) {
+    try {
+      const settings = JSON.parse(readFileSync(settingsPath, 'utf-8'))
+      const configured = settings?.['workflow-composer']?.outputDir
+      if (typeof configured === 'string' && configured.length > 0) {
+        return { agentDir: join(configured, 'agents'), workflowDir: join(configured, 'prompts') }
+      }
+    } catch {
+      // settings.json 解析失败时跳过，进入下一优先级
+    }
+  }
+
+  if (CONFIG_DIR_NAME) {
+    const root = join(projectRoot, CONFIG_DIR_NAME)
+    return { agentDir: join(root, 'agents'), workflowDir: join(root, 'prompts') }
+  }
+
+  throw new Error(
+    'Cannot resolve output directory. Install @earendil-works/pi-coding-agent ' +
+    'or set WORKFLOW_COMPOSER_OUTPUT_DIR environment variable.'
+  )
+}
 
 function kebab(s: string): string {
   return s.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/_/g, '-').toLowerCase()
@@ -97,8 +132,7 @@ function renderWorkflow(input: RenderInput): string {
 
 function compileAll(): void {
   const projectRoot = process.cwd()
-  const agentOutputDir = resolve(projectRoot, 'agents')
-  const workflowOutputDir = resolve(projectRoot, 'prompts')
+  const { agentDir: agentOutputDir, workflowDir: workflowOutputDir } = resolveOutputPaths(projectRoot)
   mkdirSync(agentOutputDir, { recursive: true })
   mkdirSync(workflowOutputDir, { recursive: true })
 
