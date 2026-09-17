@@ -12,8 +12,15 @@
     "build": "tsx src/compiler.ts"
   },
   "pi-subagents": {
-    "agents": ["./agents"],
-    "prompts": ["./prompts"]
+    "agents": [
+      "./agents"
+    ],
+    "prompts": [
+      "./prompts"
+    ]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "^0.85.1"
   },
   "dependencies": {
     "yaml": "^2.8.3"
