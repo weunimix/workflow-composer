@@ -35,8 +35,8 @@ ${this.HARD_CONSTRAINTS}
 - \`.pi/审查体系.md\`：审查范围清单 + 依赖速查（入口）
 - \`.pi/skills/novel-writer-conventions/workflows/设定图谱.md\`：11 节全景索引（域映射 / 底层设定 / 节点设定 / 接口汇总 / 依赖图 / 加载原则）
 
-## 不调用设定图谱扩展
-工具列表有 query_setting_graph，但本设计明确规定不使用（详见审查体系.md B-附录：只通过 read 工具读取文件完成）。零运行时依赖。
+## 不调用 query_setting_graph 工具（已废弃）
+工具列表为 read / find / ls，本设计明确规定不使用 query_setting_graph 工具。零运行时依赖。
 
 ## 模式 A 工作流程
 
@@ -82,7 +82,7 @@ ${this.HARD_CONSTRAINTS}
   public shouldNot(): string[] {
     return [
       '执行任何文件修改（修复由主会话负责）',
-      '使用 query_setting_graph 扩展（仅用 read 工具读文件——零运行时依赖）',
+      '使用 query_setting_graph 工具（已废弃，仅用 read 工具读文件——零运行时依赖）',
       '替主会话做边界判断（标注 ⚠️ 需人类裁定）',
       '缓存之前的审查结论（保持 FRESH 独立视角）',
       '模糊引用文件路径（必须显式逐文件列出）',

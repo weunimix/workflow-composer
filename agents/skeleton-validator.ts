@@ -12,7 +12,7 @@ import { agentName } from '../lib/decorators/agent-name'
 @displayName('节点骨架审查')
 @description('验证节点骨架区 H1-H5 合规性。FRESH 上下文，独立视角，不知道设计内幕。')
 @config({
-  tools: 'read, query_setting_graph',
+  tools: 'read',
   context: 'fresh',
   systemPromptMode: 'replace',
   inheritProjectContext: 'false',
@@ -39,7 +39,7 @@ ${this.HARD_CONSTRAINTS}`
       '读取目标节点文件后，提取所有依赖节点声明',
       '对照节点设定模板检查 H1 七段完整性（约束推导表 / 核心前提 / 对外接口 / 冲突仲裁 / 边界条件 / 对外约束 / 依赖承诺）',
       '对照节点构建规范检查 H1-H5 约束定义',
-      '使用 query_setting_graph 查询接口中引用的关联节点',
+      '使用 read 工具读 设定系统/设定图谱.yaml 的 by_name 段，按接口声明中的节点名查 path',
       '对每个接口声明做上下游一致性检查（INPUT/OUTPUT 双向、接口深度匹配）',
       '检查 Layer 0 是否被错误作为节点内容写入',
       '检查 H3 跨设定违规、是否将其他节点设定领域内容嵌入',
@@ -72,8 +72,8 @@ ${this.HARD_CONSTRAINTS}`
       '读取目标节点文件 → 提取所有依赖节点声明',
       '读取节点设定模板.md → 获取骨架区必填字段清单',
       '读取节点构建规范.md → 获取 H1-H5 约束定义',
-      '使用 query_setting_graph 查询接口中引用的关联节点',
-      '对每个接口声明中的连接节点，读取其骨架区中的对应接口声明',
+      '使用 read 工具读 设定系统/设定图谱.yaml 的 by_name 段，按接口声明中的节点名查 path',
+      '对每个接口声明中的连接节点，使用 read 工具读取其骨架区的对应接口声明',
       '逐字段、逐约束、逐接口对检查',
       '返回结构化验证报告'
     ]

@@ -30,7 +30,7 @@ ${this.HARD_CONSTRAINTS}
 
 ## 通道声明
 本审查通过 read 工具直接读取规范文档与目标节点完成。
-未使用 query_setting_graph / find / ls / subagent 委派。
+未使用 find / ls / subagent 委派。
 未来 foundation-loader 重构完成后，本流程应更新为父会话先委派 foundation-loader（FRESH），把摘要嵌入模式 B 任务文本，模式 B 仍仅使用 read 工具。
 
 ## 模式 B 工作流程
@@ -71,7 +71,7 @@ plot-wait 自动判定暂不实现（待"故事流程确定"阶段后重做）�
 
   public shouldNot(): string[] {
     return [
-      '使用 query_setting_graph / find / ls 工具（违反通道契约）',
+      '使用 find / ls 工具（违反通道契约）',
       '读取 .pi/审查体系.md（这是 Mode A 的输入，不是 Mode B 的输入）',
       '替父会话决定 mode 切换（任务声明缺失时应报错而非自决）',
       '替人类裁定 plot-wait 状态（Mode B 不做 plot-wait 自动判定）',
@@ -130,7 +130,7 @@ plot-wait 自动判定暂不实现（待"故事流程确定"阶段后重做）�
 ## 四、通道声明
 
 本审查通过 read 工具直接读取规范文档与目标节点完成。
-未使用 query_setting_graph / find / ls / subagent 委派。
+未使用 find / ls / subagent 委派。
 未来 foundation-loader 重构完成后，本流程应更新为父会话先委派 foundation-loader（FRESH），把摘要嵌入模式 B 任务文本，模式 B 仍仅使用 read 工具。
 
 ## 五、限制声明

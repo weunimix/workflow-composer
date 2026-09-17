@@ -73,8 +73,7 @@ workflow-composer/
 │   ├── decorators/
 │   │   ├── description.ts       # @description 装饰器（TS stage 3）
 │   │   └── config.ts            # @config 装饰器（TS stage 3）
-│   └── readers/
-│       └── setting-graph-reader.ts  # 设定图谱标准检索模块
+│   └── readers/                # （空目录——SettingGraphReader 于 SSOT 重构中移除）
 ├── agents/                      # Runtime 派 OO class 源
 │   ├── researcher.ts
 │   ├── worker.ts
