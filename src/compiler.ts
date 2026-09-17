@@ -59,7 +59,7 @@ interface RenderInput extends AgentMeta {
 // ===== Agent 渲染（7 字段 frontmatter + Identity/Task/Output 段）=====
 
 function renderAgent(input: RenderInput): string {
-  const { name, description, config, summary, shouldDo, shouldNot, watchOut, steps, buildOutput } = input
+  const { name, description, config, summary, shouldDo, shouldNot, watchOut, steps, stepDetails, buildOutput } = input
 
   const fm: string[] = ['---']
   fm.push(`name: ${name}`)
@@ -87,7 +87,14 @@ function renderAgent(input: RenderInput): string {
   body.push('# Task\n')
   body.push('[步骤序列由 getSteps() 提供]')
   body.push('')
-  steps.forEach((step, i) => body.push(`### 第 ${i + 1} 步：${step}`))
+  steps.forEach((step, i) => {
+    body.push(`### 第 ${i + 1} 步：${step}`)
+    const detail = stepDetails[step]
+    if (detail) {
+      body.push('')
+      body.push(detail)
+    }
+  })
   body.push('')
 
   body.push('# Output\n')
