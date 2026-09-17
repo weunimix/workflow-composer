@@ -85,6 +85,16 @@ workflow-composer 是基于 weunimix 小说协作工作区衍生的独立 pi 扩
 
 本插件编译产物的落点不是 workflow-composer 自身，而是运行 `npm run build` 时所在的工程根目录下的 `.pi/agents/` 与 `.pi/prompts/`。原因是 workflow-composer 是 pi package（编译其他 agent 的产物），不是 pi agent 项目（自身不被 pi 加载），所以本身不应存在 .pi/ 文件夹——若在该目录下出现 .pi/，会被未来 agent 误读为 pi agent 项目根而引起歧义。运行 build 时请确保 cwd 是使用方项目根目录。
 
+#### Output path resolution
+
+产物根目录按以下优先级解析（前者优先）：
+
+1. 环境变量 `WORKFLOW_COMPOSER_OUTPUT_DIR`
+2. 使用方项目 `.pi/settings.json` 的 `workflow-composer.outputDir` 字段
+3. 默认：`join(cwd, CONFIG_DIR_NAME, 'agents')` 与 `join(cwd, CONFIG_DIR_NAME, 'prompts')`，其中 `CONFIG_DIR_NAME` 由 `@earendil-works/pi-coding-agent` 提供（默认 `.pi`）
+
+若三项均不可用且无法从 pi 包取到 `CONFIG_DIR_NAME`，编译报错并提示安装 pi 或设置环境变量。`agents` 与 `prompts` 子目录名是 pi agent 加载协议的一部分（非配置项），硬编码为字面量。
+
 ### Design intent
 
 项目核心是 Runtime 派 OOP：TypeScript class 在运行时求值 OOP，compiler 把它写成 procedural markdown system prompt。这避免了在 markdown 里手写大量模板代码，同时保留 OOP 的可组合性。
